@@ -1,0 +1,54 @@
+# Dynamic Graph RAG configuration. Relative paths are resolved against the project root.
+
+paths:
+  raw_dir: data/raw/multihoprag
+  db_path: data/db/dgrag.sqlite
+  faiss_dir: data/faiss
+  results_dir: results
+
+dataset:
+  hf_repo: yixuantt/MultiHopRAG
+  corpus_file: corpus.json
+  questions_file: MultiHopRAG.json
+
+llm:
+  model_path: models/qwen2.5-7b-instruct-q4_k_m/qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf
+  n_ctx: 8192
+  n_gpu_layers: -1        # -1 = offload all layers to GPU
+  temperature: 0.0
+  seed: 42
+  # llama-server (parallel slots, PLAN.md §3 benchmark)
+  server_bin: third_party/llama.cpp/build/bin/llama-server
+  server_port: 8090
+  parallel: 16            # slots; 16 saturates the RTX 4070 Ti
+  ctx_per_slot: 3072      # prompt (~900 incl. instructions) + output (<=1024) fits comfortably
+  max_tokens: 1024
+
+embedder:
+  model_name: BAAI/bge-base-en-v1.5
+  dim: 768
+  device: cuda
+  batch_size: 64
+
+chunking:
+  chunk_tokens: 400       # counted with the embedder's tokenizer (bge max = 512)
+  overlap_tokens: 50
+  min_chunk_tokens: 40    # a tiny trailing piece is merged into the previous chunk
+
+extraction:
+  prompt_version: v2
+  max_entities: 20
+  max_relations: 20
+
+resolution:               # used from Phase 3 (PLAN.md §6.1)
+  tau_high: 0.90
+  tau_low: 0.80
+  top_k: 5
+
+community:                # used from Phase 5 (PLAN.md §7)
+  staleness_threshold: 0.2
+  superseded_weight: 3.0
+  drift_threshold: 0.05
+
+logging:
+  level: INFO

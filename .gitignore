@@ -1,0 +1,17 @@
+# large / generated artifacts
+models/
+data/
+results/*.json
+!results/.gitkeep
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+
+# editor
+.vscode/
+.idea/
+third_party/

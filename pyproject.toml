@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dgrag"
+version = "0.1.0"
+description = "Dynamic Graph RAG: incremental knowledge-graph RAG with local LLMs"
+requires-python = ">=3.11"
+# Versions are managed in ~/ml-env (see PLAN.md §3); left unpinned so editable install never upgrades anything.
+dependencies = [
+    "numpy",
+    "faiss-cpu",
+    "networkx",
+    "pyyaml",
+    "huggingface_hub",
+]
+
+[project.scripts]
+dgrag = "dgrag.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
