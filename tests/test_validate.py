@@ -87,3 +87,15 @@ def test_dates_and_amount_phrases_dropped():
         {"name": "Super Bowl LVIII", "type": "EVENT", "desc": ""}], "relations": []})
     assert [e["name"] for e in v.entities] == ["May Day", "Super Bowl LVIII"]
     assert v.dropped_entities["date_or_amount"] == 3
+
+
+def test_grounding_drops_hallucinated_and_prompt_copied_names():
+    text = "Sam Reich founded Dropout after leaving CollegeHumor. The Chiefs won."
+    v = validate_extraction({"entities": [
+        {"name": "Sam Reich", "type": "PERSON", "desc": ""},
+        {"name": "Sam Bankman-Fried", "type": "PERSON", "desc": "Founder of Dropout"},   # hallucinated
+        {"name": "TechCrunch", "type": "ORG", "desc": "publisher"},                       # copied from "Source:"
+        {"name": "Kansas City Chiefs", "type": "ORG", "desc": ""},                        # head word grounded
+        {"name": "Dropout", "type": "ORG", "desc": ""}], "relations": []}, text=text, title="Dropout drops CH")
+    assert [e["name"] for e in v.entities] == ["Sam Reich", "Kansas City Chiefs", "Dropout"]
+    assert v.dropped_entities["ungrounded"] == 2

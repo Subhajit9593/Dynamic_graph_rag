@@ -29,7 +29,7 @@ import numpy as np
 from dgrag.config import ResolutionConfig
 from dgrag.resolve.judge import Judge
 from dgrag.resolve.names import (STRICT_SUBSET_TYPES, compat_kind, entity_text, name_compatible, relation_text,
-                                 types_compatible)
+                                 types_compatible, types_soft_compatible)
 from dgrag.store import FaissManager, SQLiteStore, VectorIndex, l2_normalize
 from dgrag.store.sqlite_store import from_blob
 from dgrag.text_utils import normalize_name, normalize_predicate
@@ -234,7 +234,13 @@ class IncrementalBuilder(_GraphWriter):
                 if score < res.tau_low:
                     break
                 row = self.store.get_entity(eid)
-                if row is None or not types_compatible(row["type"], m.type):
+                if row is None:
+                    continue
+                if not types_compatible(row["type"], m.type):
+                    # soft pair (ORG/PRODUCT, ...): only the exact same name with similar meaning
+                    if types_soft_compatible(row["type"], m.type) and norm == row["name_norm"]:
+                        st["merge_soft_type"] += 1
+                        return self._merge(row, m, touched)
                     continue
                 # compare with the entity's MAIN name only (not every alias it collected): aliases like
                 # "world cup" or "sportsbook" otherwise chain unrelated entities together (PLAN.md Issue #11)
@@ -335,6 +341,9 @@ class GlobalBuilder(_GraphWriter):
                 if b <= a or score < res.tau_low or find(a) == find(b):
                     continue
                 if not types_compatible(g_type[a], g_type[b]):
+                    if types_soft_compatible(g_type[a], g_type[b]) and g_norm[a] == g_norm[b]:
+                        parent[find(a)] = find(b)
+                        self.stats["merge_soft_type"] += 1
                     continue
                 kind = compat_kind(g_norm[a], g_norm[b])
                 strict = kind == "subset" and (g_type[a] in STRICT_SUBSET_TYPES or g_type[b] in STRICT_SUBSET_TYPES)

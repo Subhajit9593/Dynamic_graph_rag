@@ -173,3 +173,13 @@ def test_display_name_upgrades_to_full_name(store, fm):
     IncrementalBuilder(store, fm, fake_embed, Judge(store, None), RES).add_documents(
         store.documents_with_status("loaded"))
     assert [r["name"] for r in store.iter_entities()] == ["Travis Kelce"]
+
+
+def test_soft_type_merge_only_for_identical_names(store, fm):
+    add_doc(store, "a", "2023-09-01", [([("FTX", "ORG", "crypto exchange")], [])])
+    add_doc(store, "b", "2023-09-02", [([("FTX", "PRODUCT", "crypto exchange platform")], [])])
+    add_doc(store, "c", "2023-09-03", [([("FTX Token", "PRODUCT", "crypto exchange token")], [])])
+    b = IncrementalBuilder(store, fm, fake_embed, Judge(store, None), RES)
+    b.add_documents(store.documents_with_status("loaded"))
+    assert sorted(r["name"] for r in store.iter_entities()) == ["FTX", "FTX Token"]
+    assert b.stats["merge_soft_type"] == 1

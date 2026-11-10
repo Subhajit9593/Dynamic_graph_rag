@@ -69,10 +69,22 @@ def _clean(s: Any, limit: int) -> str:
     return normalize_whitespace(str(s or ""))[:limit]
 
 
-def validate_extraction(obj: dict[str, Any], text: str | None = None) -> ValidatedExtraction:
-    """`text` = the chunk text; enables grounded auto-adding of forgotten relation endpoints."""
+def is_grounded(name: str, hay_norm: str) -> bool:
+    """Name (or its head word, e.g. "chiefs" of "kansas city chiefs") appears in the normalised text/title."""
+    n = normalize_name(name)
+    if f" {n} " in hay_norm:
+        return True
+    toks = [t for t in n.split() if len(t) >= 3]
+    return bool(toks) and f" {toks[-1]} " in hay_norm
+
+
+def validate_extraction(obj: dict[str, Any], text: str | None = None, title: str | None = None
+                        ) -> ValidatedExtraction:
+    """`text` = the chunk text (+ `title`): enables the grounding check (PLAN.md Issue #13) and grounded
+    auto-adding of forgotten relation endpoints. Without text, no grounding check is done."""
     out = ValidatedExtraction()
 
+    hay_norm = f" {normalize_name((text or '') + ' ' + (title or ''))} " if text is not None else None
     # ---------------------------------------------------------------- entities
     by_norm: dict[str, dict[str, str]] = {}
     for e in obj.get("entities", []) or []:
@@ -96,6 +108,11 @@ def validate_extraction(obj: dict[str, Any], text: str | None = None) -> Validat
         if not any(ch.isupper() for ch in name) and (" " in name or any(ch.isdigit() for ch in name)):
             # lowercase multi-word phrase or "1930s"/"177 cities": a concept, not a named entity
             out.dropped_entities["concept_phrase"] += 1
+            continue
+        if hay_norm is not None and not is_grounded(name, hay_norm):
+            # hallucinated ("Sam Bankman-Fried" in an article about Dropout) or copied from the prompt's
+            # "Source:" line (publisher names become noisy hub nodes)
+            out.dropped_entities["ungrounded"] += 1
             continue
         if norm in by_norm:
             out.dropped_entities["duplicate"] += 1

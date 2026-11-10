@@ -150,7 +150,7 @@ def _save(store: SQLiteStore, job: ChunkJob, obj: Any, res: ChatResult, pv: str,
     chunk_id = job.chunk_id
     ok = isinstance(obj, dict)
     if ok:
-        v = validate_extraction(obj, text=job.text)
+        v = validate_extraction(obj, text=job.text, title=job.title)
         ents, rels = v.entities, v.relations
         de, dr = sum(v.dropped_entities.values()), sum(v.dropped_relations.values())
         drop_reasons.update({f"entity:{k}": n for k, n in v.dropped_entities.items()})
@@ -177,11 +177,12 @@ def revalidate_all(store: SQLiteStore) -> dict[str, Any]:
     """
     stats: Counter = Counter()
     rows = store.conn.execute(
-        "SELECT x.chunk_id, x.raw, c.text FROM extractions x JOIN chunks c ON c.id = x.chunk_id WHERE x.ok = 1"
+        "SELECT x.chunk_id, x.raw, c.text, d.title FROM extractions x JOIN chunks c ON c.id = x.chunk_id "
+        "JOIN documents d ON d.id = c.doc_id WHERE x.ok = 1"
     ).fetchall()
     with store.transaction():
-        for cid, raw, text in rows:
-            v = validate_extraction(json.loads(raw), text=text)
+        for cid, raw, text, title in rows:
+            v = validate_extraction(json.loads(raw), text=text, title=title)
             store.conn.execute(
                 "UPDATE extractions SET entities_json = ?, relations_json = ?, n_entities = ?, n_relations = ?, "
                 "n_dropped_entities = ?, n_dropped_relations = ? WHERE chunk_id = ?",

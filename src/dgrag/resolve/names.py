@@ -14,8 +14,19 @@ from difflib import SequenceMatcher
 WILDCARD_TYPES = {"OTHER"}
 
 
+# Types the LLM labels inconsistently for the same thing ("FTX" ORG vs PRODUCT, "Israel" LOCATION vs ORG).
+# Soft pairs only merge when the names are EXACTLY equal and the meanings are similar (PLAN.md Issue #13).
+SOFT_TYPE_PAIRS = {frozenset(p) for p in (("ORG", "PRODUCT"), ("ORG", "LOCATION"), ("PRODUCT", "WORK"),
+                                          ("EVENT", "WORK"))}
+
+
 def types_compatible(a: str, b: str) -> bool:
+    """Hard compatibility: same type, or one side unknown (OTHER)."""
     return a == b or a in WILDCARD_TYPES or b in WILDCARD_TYPES
+
+
+def types_soft_compatible(a: str, b: str) -> bool:
+    return frozenset((a, b)) in SOFT_TYPE_PAIRS
 
 
 def _initials(norm: str) -> str:
