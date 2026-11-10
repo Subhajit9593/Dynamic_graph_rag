@@ -76,3 +76,14 @@ def test_concept_phrases_dropped_but_lowercase_brand_kept():
         {"name": "iPhone 15", "type": "PRODUCT", "desc": ""}], "relations": []})
     assert [e["name"] for e in v.entities] == ["bitcoin", "iPhone 15"]
     assert v.dropped_entities["concept_phrase"] == 3
+
+
+def test_dates_and_amount_phrases_dropped():
+    v = validate_extraction({"entities": [
+        {"name": "Jan. 10, 2024", "type": "EVENT", "desc": ""},
+        {"name": "October 5", "type": "EVENT", "desc": ""},
+        {"name": "$100 in Bonus Bets", "type": "PRODUCT", "desc": ""},
+        {"name": "May Day", "type": "EVENT", "desc": ""},
+        {"name": "Super Bowl LVIII", "type": "EVENT", "desc": ""}], "relations": []})
+    assert [e["name"] for e in v.entities] == ["May Day", "Super Bowl LVIII"]
+    assert v.dropped_entities["date_or_amount"] == 3

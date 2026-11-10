@@ -1,0 +1,32 @@
+{
+  "system": "dynamic",
+  "tag": "dynamic_dev_v2_nofacts",
+  "k_prompt": 8,
+  "include_facts": false,
+  "retriever_kw": {},
+  "n": 299,
+  "accuracy": {
+    "comparison_query": 0.58,
+    "inference_query": 0.8333,
+    "null_query": 0.8,
+    "temporal_query": 0.6029,
+    "overall": 0.6923,
+    "answerable_only": 0.678
+  },
+  "retrieval": {
+    "hits@4": 0.9545,
+    "hits@10": 0.9962,
+    "recall@4": 0.6544,
+    "recall@10": 0.8494,
+    "mrr@10": 0.8131,
+    "map@10": 0.6153
+  },
+  "false_refusal_rate": 0.1553,
+  "avg_prompt_tokens": 3336.2,
+  "by_type_counts": {
+    "comparison_query": 100,
+    "temporal_query": 68,
+    "null_query": 35,
+    "inference_query": 96
+  }
+}

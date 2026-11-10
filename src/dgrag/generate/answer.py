@@ -23,7 +23,9 @@ Rules:
 - "reasoning": at most 60 words; say which evidence items you used.
 - "answer": as short as possible - a name, a short phrase, or "Yes"/"No" for yes/no questions.
 - If the evidence does not contain the answer, the answer must be exactly: Insufficient information.
-- Pay attention to sources and publication dates when the question mentions them."""
+- Pay attention to sources and publication dates when the question mentions them.
+- Knowledge-graph facts are extracted automatically and may be incomplete: use them as hints to find and connect
+  evidence, but every part of your answer must be supported by the evidence text."""
 
 SYSTEM_NO_RETRIEVAL = """Answer the question about news from late 2023.
 - "reasoning": at most 60 words.

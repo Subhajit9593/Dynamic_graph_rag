@@ -53,11 +53,12 @@ class ChunkInput:
 
 
 class SQLiteStore:
-    def __init__(self, path: str | Path):
+    def __init__(self, path: str | Path, check_same_thread: bool = True):
+        """check_same_thread=False only for single-user apps that call from several threads (Streamlit demo)."""
         self.path = Path(path)
         if str(path) != ":memory:":
             self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.conn = sqlite3.connect(str(path), isolation_level=None)
+        self.conn = sqlite3.connect(str(path), isolation_level=None, check_same_thread=check_same_thread)
         self.conn.row_factory = sqlite3.Row
         self._tx_depth = 0
         self._configure()
@@ -308,8 +309,12 @@ class SQLiteStore:
         dirty: bool | None = None,
         community_id: int | None = None,
         type_: str | None = None,
+        name: str | None = None,
     ) -> None:
         sets, args = ["updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')"], []
+        if name is not None:
+            sets += ["name = ?", "name_norm = ?"]
+            args += [name, normalize_name(name)]
         if type_ is not None:
             sets.append("type = ?")
             args.append(type_)

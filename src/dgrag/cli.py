@@ -144,16 +144,19 @@ def cmd_build_graph(cfg: Config, args: argparse.Namespace) -> None:
 def cmd_stream(cfg: Config, args: argparse.Namespace) -> None:
     from dgrag.resolve.run import stream_experiment
 
-    out = stream_experiment(cfg, n_batches=args.batches, use_judge=not args.no_judge)
+    out = stream_experiment(cfg, n_batches=args.batches, use_judge=not args.no_judge,
+                            suffix="_nojudge" if args.no_judge else "")
     print(json.dumps({k: v for k, v in out.items() if k != "batches"}, indent=2))
 
 
 def cmd_eval(cfg: Config, args: argparse.Namespace) -> None:
     from dgrag.eval.run_eval import evaluate
 
+    kw = json.loads(args.retriever_kw) if args.retriever_kw else None
     for system in args.systems:
         m = evaluate(cfg, system, limit=args.limit, k_prompt=args.k,
-                     tag=f"{system}{args.tag_suffix}" if args.tag_suffix else None)
+                     tag=f"{system}{args.tag_suffix}" if args.tag_suffix else None, retriever_kw=kw,
+                     include_facts=not args.no_facts)
         print(json.dumps(m, indent=2))
 
 
@@ -181,6 +184,31 @@ def cmd_ask(cfg: Config, args: argparse.Namespace) -> None:
         obj, res = srv.client().chat_json(build_answer_messages(args.question, ret), ANSWER_SCHEMA, max_tokens=256)
     ans, why = parse_answer(obj, res.content)
     print(f"\nREASONING: {why}\nANSWER: {ans}")
+
+
+def cmd_add_article(cfg: Config, args: argparse.Namespace) -> None:
+    """Add one new article (JSON file) to a graph variant without rebuilding anything."""
+    from pathlib import Path
+
+    from dgrag.embedder import Embedder
+    from dgrag.ingest.pipeline import NewArticle, add_article
+    from dgrag.llm.server import LlamaServer
+    from dgrag.store import FaissManager, SQLiteStore
+
+    data = json.loads(Path(args.file).read_text())
+    art = NewArticle(data["title"], data["body"], data.get("source"), data.get("published_at"), data.get("url"),
+                     data.get("category"))
+    db, fdir = cfg.resolve(Path(f"data/db/{args.graph}.sqlite")), cfg.resolve(Path(f"data/faiss/{args.graph}"))
+    if not db.exists():
+        raise SystemExit(f"{db} not found (build it first, e.g. dgrag stream)")
+    with SQLiteStore(db) as store:
+        fm = FaissManager(store, fdir, cfg.embedder.dim)
+        fm.open()
+        emb = Embedder(cfg.embedder.model_name, cfg.embedder.device, cfg.embedder.batch_size)
+        with LlamaServer.from_config(cfg, parallel=4, ctx_per_slot=4096) as srv:
+            out = add_article(cfg, store, fm, emb, srv.client(), art)
+        emb.close()
+    print(json.dumps(out, indent=2, ensure_ascii=False))
 
 
 def cmd_stats(cfg: Config, args: argparse.Namespace) -> None:
@@ -257,12 +285,18 @@ def main(argv: list[str] | None = None) -> None:
     ev.add_argument("--limit", type=int, default=None, help="stratified subset of N questions")
     ev.add_argument("-k", type=int, default=8, help="chunks in the prompt")
     ev.add_argument("--tag-suffix", default="", help="suffix for result file names (e.g. _dev)")
+    ev.add_argument("--retriever-kw", default=None, help='JSON overrides for the retriever, e.g. \'{"w_source": 0}\'')
+    ev.add_argument("--no-facts", action="store_true", help="do not put graph facts in the prompt")
     ev.set_defaults(fn=cmd_eval)
     ak = sub.add_parser("ask", help="answer one question")
     ak.add_argument("question")
     ak.add_argument("--system", default="dynamic", choices=["none", "vector", "vector_rerank", "static", "dynamic"])
     ak.add_argument("-k", type=int, default=8)
     ak.set_defaults(fn=cmd_ask)
+    aa = sub.add_parser("add-article", help="add one new article (JSON file) to a graph, no rebuild")
+    aa.add_argument("file", help='JSON with "title", "body", optional "source", "published_at", "url"')
+    aa.add_argument("--graph", default="demo", help="graph variant to modify (default: demo copy)")
+    aa.set_defaults(fn=cmd_add_article)
     sub.add_parser("stats", help="print statistics").set_defaults(fn=cmd_stats)
     sub.add_parser("check", help="verify derived views against SQLite").set_defaults(fn=cmd_check)
 

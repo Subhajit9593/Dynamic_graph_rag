@@ -33,6 +33,11 @@ GENERIC_NAMES = {
     "industry", "deal", "report", "season", "game", "match", "league", "court", "police", "ceo", "coach",
     "president", "he", "she", "they", "it", "we", "i", "you",
 }
+# dates: "Jan. 10, 2024", "October 5", "2023-10-01", "Sept 26th"
+_MONTHS = r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?"
+_DATE = re.compile(rf"^(?:{_MONTHS}\s+\d{{1,2}}(?:st|nd|rd|th)?(?:,?\s*\d{{4}})?|\d{{1,2}}\s+{_MONTHS}(?:\s+\d{{4}})?|"
+                   rf"\d{{4}}-\d{{2}}-\d{{2}}|{_MONTHS}\s+\d{{4}})$", re.IGNORECASE)
+_MONEY_PREFIX = re.compile(r"^[$€£¥]\s?\d")  # "$100 in Bonus Bets", "$5m deal"
 MAX_NAME_CHARS = 80
 _NAME_CONNECTORS = {"of", "the", "de", "for", "&", "-", "von", "van", "da", "del", "la", "le", "on", "at"}
 
@@ -81,6 +86,9 @@ def validate_extraction(obj: dict[str, Any], text: str | None = None) -> Validat
             continue
         if _NUMERIC.match(name) and not re.fullmatch(r"\d+[kKmM]", name):  # keep names like "3M"
             out.dropped_entities["numeric"] += 1
+            continue
+        if _DATE.match(name) or _MONEY_PREFIX.match(name):
+            out.dropped_entities["date_or_amount"] += 1
             continue
         if norm in GENERIC_NAMES:
             out.dropped_entities["generic"] += 1

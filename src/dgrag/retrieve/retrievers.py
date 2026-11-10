@@ -127,12 +127,21 @@ class GraphRetriever:
     def __init__(self, store: SQLiteStore, fm: FaissManager, k: int = 8, per_doc: int | None = 2,
                  n_seed_entities: int = 10, n_seed_relations: int = 20, n_seed_chunks: int = 10,
                  hops: int = 2, max_neighbors: int = 25, n_facts: int = 15, ppr_alpha: float = 0.85,
-                 w_sim: float = 1.0, w_ppr: float = 0.5, w_weight: float = 0.05, w_vec_chunk: float = 1.0):
+                 w_sim: float = 1.0, w_ppr: float = 0.5, w_weight: float = 0.05, w_vec_chunk: float = 1.0,
+                 n_vec_candidates: int = 30, w_graph: float = 0.05, chunk_scoring: str = "hybrid",
+                 w_source: float = 0.1, per_source: int = 3):
         self.store, self.fm = store, fm
         self.k, self.per_doc = k, per_doc
         self.n_seed_entities, self.n_seed_relations, self.n_seed_chunks = n_seed_entities, n_seed_relations, n_seed_chunks
         self.hops, self.max_neighbors, self.n_facts, self.ppr_alpha = hops, max_neighbors, n_facts, ppr_alpha
         self.w_sim, self.w_ppr, self.w_weight, self.w_vec_chunk = w_sim, w_ppr, w_weight, w_vec_chunk
+        # chunk_scoring: "hybrid" (v2, default) = dense similarity + w_graph * graph bonus (PageRank of the entities
+        # the chunk mentions); "facts" (v1) = chunk inherits its best fact's score (graph replaces similarity).
+        self.n_vec_candidates, self.w_graph, self.chunk_scoring = n_vec_candidates, w_graph, chunk_scoring
+        # source-aware retrieval: MultiHop-RAG questions often name their sources ("... reported by The Verge and
+        # TechCrunch"). Article -> source is structured knowledge we store; chunks from named sources get a boost
+        # and each named source contributes its best `per_source` chunks as candidates.
+        self.w_source, self.per_source = w_source, per_source
         self._load()
 
     def _load(self) -> None:
@@ -151,6 +160,12 @@ class GraphRetriever:
         for a, e in self.store.conn.execute("SELECT alias_norm, entity_id FROM entity_aliases"):
             if len(a) >= 3:
                 self.alias[a].append(int(e))
+        self.doc_source = dict(self.store.conn.execute(
+            "SELECT c.id, d.source FROM chunks c JOIN documents d ON d.id = c.doc_id").fetchall())
+        self.sources = sorted({s for s in self.doc_source.values() if s}, key=len, reverse=True)
+        self.source_chunks: dict[str, list[int]] = defaultdict(list)
+        for c, src in self.doc_source.items():
+            self.source_chunks[src].append(c)
         mc = dict(self.store.conn.execute("SELECT id, mention_count FROM entities").fetchall())
         self.mention_count = {int(k): v for k, v in mc.items()}
 
@@ -165,6 +180,15 @@ class GraphRetriever:
                     found[e] = max(found.get(e, 0.0), 1.0)
         return found
 
+    def named_sources(self, question: str) -> set[str]:
+        ql = question.lower()
+        found = set()
+        for src in self.sources:  # longest first: "The Independent - Life and Style" before "The Independent"
+            base = src.split(" | ")[0].split(" - ")[0].strip().lower()  # "Cnbc | World Business News Leader" -> "cnbc"
+            if len(base) >= 3 and re.search(rf"\b{re.escape(base)}\b", ql):
+                found.add(src)
+        return found
+
     def retrieve(self, question: str, q_vec: np.ndarray) -> Retrieval:
         seeds: dict[int, float] = dict(self._alias_seeds(question))
         n_alias = len(seeds)
@@ -176,7 +200,7 @@ class GraphRetriever:
             if r:
                 for e in (r["src"], r["tgt"]):
                     seeds[e] = max(seeds.get(e, 0.0), s * 0.9)
-        chunk_hits = self.fm.chunks.search(q_vec, self.n_seed_chunks)[0]
+        chunk_hits = self.fm.chunks.search(q_vec, max(self.n_seed_chunks, self.n_vec_candidates))[0]
 
         # ---------------- expand: hub-capped 2-hop neighbourhood
         g = self.graph
@@ -236,9 +260,36 @@ class GraphRetriever:
             facts.append(Fact(rid, txt, score, ev))
             for c in ev:
                 chunk_score[c] = max(chunk_score[c], score)  # a chunk is as good as its best supporting fact
-        for c, s in chunk_hits:
-            chunk_score[c] = max(chunk_score[c], self.w_vec_chunk * s + 0.05)  # direct hits as a safety net
-        ranked = sorted(chunk_score.items(), key=lambda x: -x[1])
+        if self.chunk_scoring == "facts":  # v1 (kept for the ablation)
+            for c, s in chunk_hits[: self.n_seed_chunks]:
+                chunk_score[c] = max(chunk_score[c], self.w_vec_chunk * s + 0.05)
+            ranked = sorted(chunk_score.items(), key=lambda x: -x[1])
+        else:  # v2 hybrid: similarity first, graph as a bonus
+            cand_chunks = {c for c, _ in chunk_hits} | set(chunk_score)
+            dense = dict(chunk_hits)
+            srcs = self.named_sources(question) if self.w_source or self.per_source else set()
+            for src in srcs:  # best chunks of each named source become candidates
+                ids = self.source_chunks.get(src, [])
+                if ids:
+                    sims = [(c, float(np.dot(self.fm.chunks.reconstruct(c), q))) for c in ids]
+                    for c, sv in sorted(sims, key=lambda x: -x[1])[: self.per_source]:
+                        cand_chunks.add(c)
+                        dense[c] = sv
+            for c in cand_chunks - dense.keys():
+                dense[c] = float(np.dot(self.fm.chunks.reconstruct(c), q))
+            bonus: dict[int, float] = defaultdict(float)
+            if ppr:
+                ids = list(cand_chunks)
+                for c, e in self.store.conn.execute(
+                        f"SELECT chunk_id, entity_id FROM entity_mentions WHERE chunk_id IN ({','.join('?' * len(ids))})",
+                        ids):
+                    bonus[c] += ppr.get(e, 0.0) / ppr_max
+                bmax = max(bonus.values()) if bonus else 0.0
+                if bmax > 0:
+                    bonus = defaultdict(float, {c: b / bmax for c, b in bonus.items()})
+            src_bonus = {c: self.w_source for c in cand_chunks if self.doc_source.get(c) in srcs}
+            ranked = sorted(((c, dense[c] + self.w_graph * bonus[c] + src_bonus.get(c, 0.0)) for c in cand_chunks),
+                            key=lambda x: -x[1])
         chosen = _cap_per_doc(self.store, ranked, self.k, self.per_doc)
         return Retrieval(_chunk_rows(self.store, chosen), facts,
                          {"seeds": len(seeds), "alias_seeds": n_alias, "subgraph_nodes": len(nodes),

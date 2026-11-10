@@ -28,7 +28,8 @@ import numpy as np
 
 from dgrag.config import ResolutionConfig
 from dgrag.resolve.judge import Judge
-from dgrag.resolve.names import entity_text, name_compatible, relation_text, types_compatible
+from dgrag.resolve.names import (STRICT_SUBSET_TYPES, compat_kind, entity_text, name_compatible, relation_text,
+                                 types_compatible)
 from dgrag.store import FaissManager, SQLiteStore, VectorIndex, l2_normalize
 from dgrag.store.sqlite_store import from_blob
 from dgrag.text_utils import normalize_name, normalize_predicate
@@ -218,11 +219,15 @@ class IncrementalBuilder(_GraphWriter):
     def _resolve(self, m: Mention, touched: dict[int, np.ndarray]) -> int:
         st, res = self.stats, self.res
         norm = normalize_name(m.name)
-        # 1) exact alias
+        # 1) exact alias. A one-word alias that is only PART of a longer name ("wilson" of "Zach Wilson") is not
+        #    trusted blindly - another Wilson may appear - so it goes through the similarity check in step 2.
         for row in self.store.find_entities_by_alias(m.name):
-            if types_compatible(row["type"], m.type):
-                st["merge_alias"] += 1
-                return self._merge(row, m, touched)
+            if not types_compatible(row["type"], m.type):
+                continue
+            if " " not in norm and norm != row["name_norm"] and " " in row["name_norm"]:
+                continue
+            st["merge_alias"] += 1
+            return self._merge(row, m, touched)
         # 2) nearest neighbours by meaning, gated by name rules / LLM judge
         if m.vec is not None and self.fm.entities.ntotal:
             for eid, score in self.fm.entities.search(m.vec, res.top_k)[0]:
@@ -231,7 +236,11 @@ class IncrementalBuilder(_GraphWriter):
                 row = self.store.get_entity(eid)
                 if row is None or not types_compatible(row["type"], m.type):
                     continue
-                if any(name_compatible(norm, a) for a in self.store.aliases_of(eid)):
+                # compare with the entity's MAIN name only (not every alias it collected): aliases like
+                # "world cup" or "sportsbook" otherwise chain unrelated entities together (PLAN.md Issue #11)
+                kind = compat_kind(norm, row["name_norm"])
+                strict = kind == "subset" and (m.type in STRICT_SUBSET_TYPES or row["type"] in STRICT_SUBSET_TYPES)
+                if kind is not None and (not strict or score >= res.tau_high):
                     st["merge_vector"] += 1
                     return self._merge(row, m, touched)
                 if score >= res.tau_high and self.judge.same_entity(
@@ -250,6 +259,9 @@ class IncrementalBuilder(_GraphWriter):
         eid = int(row["id"])
         self.store.add_alias(eid, m.name)
         upd: dict[str, Any] = {}
+        mnorm, rnorm = normalize_name(m.name), row["name_norm"]
+        if set(rnorm.split()) < set(mnorm.split()) and len(m.name) <= 60:
+            upd["name"] = m.name  # "Kelce" -> "Travis Kelce": keep the more complete name for display
         if row["type"] == "OTHER" and m.type != "OTHER":
             upd["type_"] = m.type
         if not row["description"] and m.desc:
@@ -324,7 +336,9 @@ class GlobalBuilder(_GraphWriter):
                     continue
                 if not types_compatible(g_type[a], g_type[b]):
                     continue
-                if name_compatible(g_norm[a], g_norm[b]):
+                kind = compat_kind(g_norm[a], g_norm[b])
+                strict = kind == "subset" and (g_type[a] in STRICT_SUBSET_TYPES or g_type[b] in STRICT_SUBSET_TYPES)
+                if kind is not None and (not strict or score >= res.tau_high):
                     parent[find(a)] = find(b)
                     self.stats["merge_vector"] += 1
                 elif score >= res.tau_high:

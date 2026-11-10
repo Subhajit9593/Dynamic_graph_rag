@@ -113,14 +113,18 @@ def build_graph(cfg: Config, variant: str, mode: str, use_judge: bool = True, li
             store.close()
 
 
-def stream_experiment(cfg: Config, n_batches: int = 10, use_judge: bool = True) -> dict[str, Any]:
-    """Feed documents in date order, batch by batch. dynamic = add only the new batch; static = rebuild all."""
-    results: dict[str, Any] = {"n_batches": n_batches, "batches": []}
-    make_variant(cfg, "dynamic")
-    make_variant(cfg, "static")
+def stream_experiment(cfg: Config, n_batches: int = 10, use_judge: bool = True, suffix: str = "") -> dict[str, Any]:
+    """Feed documents in date order, batch by batch. dynamic = add only the new batch; static = rebuild all.
+
+    suffix: variant/result name suffix, e.g. "_nojudge" (keeps the judged graphs used for evaluation intact).
+    """
+    results: dict[str, Any] = {"n_batches": n_batches, "use_judge": use_judge, "batches": []}
+    dyn_name, st_name = f"dynamic{suffix}", f"static{suffix}"
+    make_variant(cfg, dyn_name)
+    make_variant(cfg, st_name)
     with _Resources(cfg, use_judge) as rs:
-        dyn_store, dyn_fm = _open(cfg, "dynamic")
-        st_store, st_fm = _open(cfg, "static")
+        dyn_store, dyn_fm = _open(cfg, dyn_name)
+        st_store, st_fm = _open(cfg, st_name)
         try:
             docs = dyn_store.documents_with_status("extracted")  # chronological
             dyn = IncrementalBuilder(dyn_store, dyn_fm, rs.embedder.encode, Judge(dyn_store, rs.ask), cfg.resolution)
@@ -147,7 +151,7 @@ def stream_experiment(cfg: Config, n_batches: int = 10, use_judge: bool = True) 
             for s, f in ((dyn_store, dyn_fm), (st_store, st_fm)):
                 f.save()
                 s.close()
-    out = cfg.resolve(cfg.paths.results_dir) / "stream_experiment.json"
+    out = cfg.resolve(cfg.paths.results_dir) / f"stream_experiment{suffix}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     results["created"] = time.strftime("%Y-%m-%d %H:%M")
     out.write_text(json.dumps(results, indent=2))

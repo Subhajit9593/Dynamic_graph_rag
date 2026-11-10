@@ -136,7 +136,8 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def evaluate(cfg: Config, system: str, limit: int | None = None, k_prompt: int = 8, k_rank: int = 20,
-             tag: str | None = None, retriever_kw: dict | None = None) -> dict[str, Any]:
+             tag: str | None = None, retriever_kw: dict | None = None, include_facts: bool = True
+             ) -> dict[str, Any]:
     from dgrag.llm.server import LlamaServer
 
     name = tag or system
@@ -160,7 +161,8 @@ def evaluate(cfg: Config, system: str, limit: int | None = None, k_prompt: int =
 
             def run(q: Question) -> dict[str, Any]:
                 ret = rets[q.qid]
-                prompt_ret = replace(ret, chunks=ret.chunks[:k_prompt]) if ret is not None else None
+                prompt_ret = replace(ret, chunks=ret.chunks[:k_prompt],
+                                     facts=ret.facts if include_facts else []) if ret is not None else None
                 msgs = build_answer_messages(q.query, prompt_ret)
                 obj, res = client.chat_json(msgs, ANSWER_SCHEMA, max_tokens=256, temperature=0.0)
                 pred, reasoning = parse_answer(obj, res.content)
@@ -191,6 +193,7 @@ def evaluate(cfg: Config, system: str, limit: int | None = None, k_prompt: int =
                              (len(futs) - i) * el / i / 60)
 
     records = [done[q.qid] for q in questions if q.qid in done]
-    metrics = {"system": system, "tag": name, "k_prompt": k_prompt, **summarize(records)}
+    metrics = {"system": system, "tag": name, "k_prompt": k_prompt, "include_facts": include_facts,
+               "retriever_kw": retriever_kw or {}, **summarize(records)}
     (out_dir / f"{name}_metrics.json").write_text(json.dumps(metrics, indent=2))
     return metrics

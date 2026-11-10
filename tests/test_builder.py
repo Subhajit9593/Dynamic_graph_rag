@@ -79,6 +79,13 @@ def test_name_rules():
     assert name_compatible("jermey kelce", "jeremy kelce")
     assert not name_compatible("goodman", "dexus")
     assert not name_compatible("apple", "microsoft")
+    # variants are not the same entity (PLAN.md Issue #11)
+    assert not name_compatible("13-inch macbook pro", "16-inch macbook pro")
+    assert not name_compatible("nintendo switch", "nintendo switch lite")
+    assert not name_compatible("world cup", "rugby world cup")
+    assert not name_compatible("2-year treasury yield", "10-year treasury yield")
+    assert not name_compatible("draftkings sportsbook", "sportsbook")
+    assert name_compatible("green bay packers", "packers") and name_compatible("eddy cue", "cue")
     assert functional_key("CEO of") == "ceo" and functional_key("defeated") is None
 
 
@@ -148,3 +155,21 @@ def test_global_builder_matches_on_simple_corpus(store, fm):
     for t in ("entities", "relations"):
         assert fm.is_consistent(t)
     assert all(store.get_document(d)["status"] == "resolved" for d in docs)
+
+
+def test_surname_alias_needs_similarity_check(store, fm):
+    add_doc(store, "a", "2023-09-01", [([("Zach Wilson", "PERSON", "New York Jets quarterback")], [])])
+    add_doc(store, "b", "2023-09-02", [([("Wilson", "PERSON", "New York Jets quarterback")], [])])
+    add_doc(store, "c", "2023-09-03", [([("Wilson", "PERSON", "astronomer studying distant galaxies telescope")], [])])
+    b = IncrementalBuilder(store, fm, fake_embed, Judge(store, None), ResolutionConfig(0.9, 0.6, 5))
+    b.add_documents(store.documents_with_status("loaded"))
+    ents = {r["name"]: r["mention_count"] for r in store.iter_entities()}
+    assert ents == {"Zach Wilson": 2, "Wilson": 1}   # the Jets Wilson merged, the astronomer did not
+
+
+def test_display_name_upgrades_to_full_name(store, fm):
+    add_doc(store, "a", "2023-09-01", [([("Kelce", "PERSON", "Chiefs tight end")], [])])
+    add_doc(store, "b", "2023-09-02", [([("Travis Kelce", "PERSON", "Chiefs tight end")], [])])
+    IncrementalBuilder(store, fm, fake_embed, Judge(store, None), RES).add_documents(
+        store.documents_with_status("loaded"))
+    assert [r["name"] for r in store.iter_entities()] == ["Travis Kelce"]
