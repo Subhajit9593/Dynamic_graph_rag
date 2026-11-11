@@ -168,7 +168,7 @@ with tab_ask:
         with c1:
             st.subheader("Facts from the graph")
             st.dataframe([{"score": round(f.score, 2), "fact": f.text, "evidence chunks": len(f.chunk_ids)}
-                          for f in ret.facts], use_container_width=True, hide_index=True)
+                          for f in ret.facts], width="stretch", hide_index=True)
             st.subheader("Subgraph")
             st.components.v1.html(subgraph_html(store, ret.facts[:12]), height=480)
         with c2:
@@ -206,10 +206,10 @@ with tab_add:
             c2.markdown("**New entities**")
             c2.write(out["entities_new"] or "—")
             st.markdown("**Relations from this article**")
-            st.dataframe(out["relations"], use_container_width=True, hide_index=True)
+            st.dataframe(out["relations"], width="stretch", hide_index=True)
             if out["superseded_old_facts"]:
                 st.markdown("**Older facts now marked as replaced**")
-                st.dataframe(out["superseded_old_facts"], use_container_width=True, hide_index=True)
+                st.dataframe(out["superseded_old_facts"], width="stretch", hide_index=True)
 
 with tab_graph:
     st.subheader("Most connected entities")
@@ -217,7 +217,7 @@ with tab_graph:
         "SELECT e.name, e.type, e.mention_count, (SELECT COUNT(*) FROM relations r WHERE (r.src_id = e.id OR "
         "r.tgt_id = e.id) AND r.status != 'superseded') AS degree FROM entities e ORDER BY degree DESC LIMIT 20"
     ).fetchall()
-    st.dataframe([dict(name=h[0], type=h[1], mentions=h[2], degree=h[3]) for h in hubs], use_container_width=True,
+    st.dataframe([dict(name=h[0], type=h[1], mentions=h[2], degree=h[3]) for h in hubs], width="stretch",
                  hide_index=True)
     st.subheader("Facts replaced by newer articles")
     sup = store.conn.execute(
@@ -227,4 +227,4 @@ with tab_graph:
         "JOIN entities s ON s.id = r.src_id JOIN entities t ON t.id = r.tgt_id WHERE r.status = 'superseded' "
         "ORDER BY r.valid_to DESC LIMIT 50").fetchall()
     st.dataframe([dict(old_fact=f"{a} {b} {c}", valid_from=d, valid_to=e, replaced_by=f) for a, b, c, d, e, f in sup],
-                 use_container_width=True, hide_index=True)
+                 width="stretch", hide_index=True)

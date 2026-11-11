@@ -70,8 +70,9 @@ total. A rebuild that also re-ran extraction would cost ~70 GPU-minutes each tim
 - Dynamic ≈ static in quality: greedy incremental entity resolution loses nothing measurable, at ~5× lower update cost.
 - The retrieval ablation (`results/ablation_retrieval.json`) shows most of the ranking gain comes from
   **source-aware retrieval** (questions name their publishers); the graph bonus itself changes ranking little.
-  The graph's value is in **facts in the prompt** (+3.4 pts on answerable dev questions), **cheap updates with
-  dated facts**, and **explainable evidence**.
+  A control run with the graph switched off (source-aware retrieval kept, no graph facts) scores **70.1%**: source-aware
+  retrieval adds +1.4 pts over vector RAG, and the graph adds **+1.3 pts** on top (temporal +2.2, comparison +1.5).
+  The graph's other value is **cheap updates with dated facts** and **explainable evidence**.
 - Three retrieval weights were tuned on a 300-question subset of the test questions.
 
 ## Usage
