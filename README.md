@@ -10,8 +10,7 @@ arrive**, instead of rebuilding it. Everything runs locally on one 12 GB GPU.
   + networkx (in-memory graph view)
 - **Data:** [MultiHop-RAG](https://huggingface.co/datasets/yixuantt/MultiHopRAG): 609 news articles, 2,556 questions
 
-The design, every decision and every bug (with cause and fix) are in [PLAN.md](PLAN.md). A plain-language report
-with interview Q&A is in [report/Dynamic_Graph_RAG_Report.pdf](report/Dynamic_Graph_RAG_Report.pdf).
+The design, every decision and every bug (with cause and fix) are in [PLAN.md](PLAN.md).
 
 ## How it works
 

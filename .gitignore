@@ -13,3 +13,6 @@ __pycache__/
 .vscode/
 .idea/
 third_party/
+
+# local-only report output
+report/*.pdf
