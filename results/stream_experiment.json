@@ -1,0 +1,262 @@
+{
+  "n_batches": 10,
+  "use_judge": true,
+  "batches": [
+    {
+      "batch": 1,
+      "new_docs": 61,
+      "total_docs": 61,
+      "until": "2023-10-04",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 80.55,
+        "judge_llm_calls": 167,
+        "entities": 1944,
+        "relations": 1114,
+        "superseded": 0,
+        "mentions": 3188
+      },
+      "static": {
+        "documents": 61,
+        "seconds": 70.99,
+        "judge_llm_calls": 180,
+        "entities": 1869,
+        "relations": 1109,
+        "superseded": 0,
+        "mentions": 3162
+      }
+    },
+    {
+      "batch": 2,
+      "new_docs": 61,
+      "total_docs": 122,
+      "until": "2023-10-12",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 48.57,
+        "judge_llm_calls": 120,
+        "entities": 4466,
+        "relations": 3125,
+        "superseded": 0,
+        "mentions": 8045
+      },
+      "static": {
+        "documents": 122,
+        "seconds": 50.11,
+        "judge_llm_calls": 132,
+        "entities": 4285,
+        "relations": 3078,
+        "superseded": 0,
+        "mentions": 7980
+      }
+    },
+    {
+      "batch": 3,
+      "new_docs": 61,
+      "total_docs": 183,
+      "until": "2023-10-19",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 70.12,
+        "judge_llm_calls": 172,
+        "entities": 6056,
+        "relations": 4598,
+        "superseded": 0,
+        "mentions": 11379
+      },
+      "static": {
+        "documents": 183,
+        "seconds": 72.82,
+        "judge_llm_calls": 177,
+        "entities": 5790,
+        "relations": 4518,
+        "superseded": 1,
+        "mentions": 11278
+      }
+    },
+    {
+      "batch": 4,
+      "new_docs": 61,
+      "total_docs": 244,
+      "until": "2023-10-26",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 81.27,
+        "judge_llm_calls": 184,
+        "entities": 7890,
+        "relations": 6150,
+        "superseded": 0,
+        "mentions": 15163
+      },
+      "static": {
+        "documents": 244,
+        "seconds": 95.81,
+        "judge_llm_calls": 223,
+        "entities": 7505,
+        "relations": 6029,
+        "superseded": 1,
+        "mentions": 15003
+      }
+    },
+    {
+      "batch": 5,
+      "new_docs": 61,
+      "total_docs": 305,
+      "until": "2023-11-05",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 37.34,
+        "judge_llm_calls": 74,
+        "entities": 9466,
+        "relations": 7524,
+        "superseded": 0,
+        "mentions": 18749
+      },
+      "static": {
+        "documents": 305,
+        "seconds": 50.88,
+        "judge_llm_calls": 102,
+        "entities": 8998,
+        "relations": 7365,
+        "superseded": 1,
+        "mentions": 18536
+      }
+    },
+    {
+      "batch": 6,
+      "new_docs": 61,
+      "total_docs": 366,
+      "until": "2023-11-17",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 79.58,
+        "judge_llm_calls": 185,
+        "entities": 10938,
+        "relations": 9051,
+        "superseded": 0,
+        "mentions": 22261
+      },
+      "static": {
+        "documents": 366,
+        "seconds": 93.74,
+        "judge_llm_calls": 207,
+        "entities": 10391,
+        "relations": 8855,
+        "superseded": 2,
+        "mentions": 22010
+      }
+    },
+    {
+      "batch": 7,
+      "new_docs": 61,
+      "total_docs": 427,
+      "until": "2023-11-27",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 56.98,
+        "judge_llm_calls": 134,
+        "entities": 12413,
+        "relations": 10594,
+        "superseded": 1,
+        "mentions": 26109
+      },
+      "static": {
+        "documents": 427,
+        "seconds": 92.09,
+        "judge_llm_calls": 201,
+        "entities": 11752,
+        "relations": 10378,
+        "superseded": 3,
+        "mentions": 25850
+      }
+    },
+    {
+      "batch": 8,
+      "new_docs": 61,
+      "total_docs": 488,
+      "until": "2023-12-05",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 62.04,
+        "judge_llm_calls": 144,
+        "entities": 13514,
+        "relations": 11932,
+        "superseded": 5,
+        "mentions": 29417
+      },
+      "static": {
+        "documents": 488,
+        "seconds": 100.08,
+        "judge_llm_calls": 195,
+        "entities": 12779,
+        "relations": 11660,
+        "superseded": 8,
+        "mentions": 29104
+      }
+    },
+    {
+      "batch": 9,
+      "new_docs": 61,
+      "total_docs": 549,
+      "until": "2023-12-13",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 116.82,
+        "judge_llm_calls": 292,
+        "entities": 14539,
+        "relations": 13218,
+        "superseded": 16,
+        "mentions": 32728
+      },
+      "static": {
+        "documents": 549,
+        "seconds": 152.03,
+        "judge_llm_calls": 325,
+        "entities": 13724,
+        "relations": 12880,
+        "superseded": 17,
+        "mentions": 32361
+      }
+    },
+    {
+      "batch": 10,
+      "new_docs": 60,
+      "total_docs": 609,
+      "until": "2023-12-25",
+      "dynamic": {
+        "documents": 60,
+        "seconds": 119.75,
+        "judge_llm_calls": 282,
+        "entities": 15833,
+        "relations": 14634,
+        "superseded": 20,
+        "mentions": 35940
+      },
+      "static": {
+        "documents": 609,
+        "seconds": 160.75,
+        "judge_llm_calls": 309,
+        "entities": 14925,
+        "relations": 14242,
+        "superseded": 20,
+        "mentions": 35495
+      }
+    }
+  ],
+  "dynamic_total_seconds": 753.0,
+  "static_total_seconds": 939.3,
+  "dynamic_stats": {
+    "entities_new": 15833,
+    "mentions": 36281,
+    "merge_judge": 252,
+    "merge_alias": 18398,
+    "merge_vector": 1469,
+    "relations_new": 14654,
+    "relations_reinforced": 1498,
+    "merge_soft_type": 329,
+    "relations_conflicted": 111,
+    "relations_self_loop": 127,
+    "relations_superseded": 20
+  },
+  "created": "2026-11-11 03:14"
+}

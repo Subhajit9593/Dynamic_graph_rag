@@ -1,0 +1,32 @@
+{
+  "system": "vector",
+  "tag": "vector",
+  "k_prompt": 8,
+  "include_facts": true,
+  "retriever_kw": {},
+  "n": 2556,
+  "accuracy": {
+    "comparison_query": 0.5607,
+    "inference_query": 0.8664,
+    "null_query": 0.8106,
+    "temporal_query": 0.5592,
+    "overall": 0.6874,
+    "answerable_only": 0.671
+  },
+  "retrieval": {
+    "hits@4": 0.8878,
+    "hits@10": 0.9823,
+    "recall@4": 0.5736,
+    "recall@10": 0.7603,
+    "mrr@10": 0.729,
+    "map@10": 0.5206
+  },
+  "false_refusal_rate": 0.1703,
+  "avg_prompt_tokens": 3405.6,
+  "by_type_counts": {
+    "inference_query": 816,
+    "comparison_query": 856,
+    "null_query": 301,
+    "temporal_query": 583
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "system": "none",
+  "tag": "none",
+  "k_prompt": 8,
+  "include_facts": true,
+  "retriever_kw": {},
+  "n": 2556,
+  "accuracy": {
+    "comparison_query": 0.1414,
+    "inference_query": 0.4534,
+    "null_query": 0.5482,
+    "temporal_query": 0.1235,
+    "overall": 0.2848,
+    "answerable_only": 0.2497
+  },
+  "retrieval": {},
+  "false_refusal_rate": 0.6027,
+  "avg_prompt_tokens": 142.6,
+  "by_type_counts": {
+    "inference_query": 816,
+    "comparison_query": 856,
+    "null_query": 301,
+    "temporal_query": 583
+  }
+}

@@ -1,8 +1,6 @@
 # large / generated artifacts
 models/
 data/
-results/*.json
-!results/.gitkeep
 
 # python
 __pycache__/

@@ -1,0 +1,93 @@
+{
+  "n_questions": 2255,
+  "rows": [
+    {
+      "graph": "-",
+      "setting": "vector RAG (top-k)",
+      "hits@4": 0.8878,
+      "hits@10": 0.9823,
+      "recall@4": 0.5736,
+      "recall@10": 0.7603,
+      "mrr@10": 0.729,
+      "map@10": 0.5206,
+      "ms_per_query": 0.9
+    },
+    {
+      "graph": "dynamic",
+      "setting": "full (graph bonus + source-aware)",
+      "hits@4": 0.9543,
+      "hits@10": 0.9969,
+      "recall@4": 0.6625,
+      "recall@10": 0.8397,
+      "mrr@10": 0.7906,
+      "map@10": 0.6004,
+      "ms_per_query": 54.9
+    },
+    {
+      "graph": "dynamic",
+      "setting": "- source-aware (graph bonus only)",
+      "hits@4": 0.8874,
+      "hits@10": 0.9854,
+      "recall@4": 0.573,
+      "recall@10": 0.7838,
+      "mrr@10": 0.7224,
+      "map@10": 0.5235,
+      "ms_per_query": 50.3
+    },
+    {
+      "graph": "dynamic",
+      "setting": "- graph bonus (source-aware only)",
+      "hits@4": 0.957,
+      "hits@10": 0.9933,
+      "recall@4": 0.6637,
+      "recall@10": 0.8309,
+      "mrr@10": 0.7992,
+      "map@10": 0.6022,
+      "ms_per_query": 54.8
+    },
+    {
+      "graph": "dynamic",
+      "setting": "- both (= vector, 2 chunks per article)",
+      "hits@4": 0.8878,
+      "hits@10": 0.9823,
+      "recall@4": 0.5738,
+      "recall@10": 0.771,
+      "mrr@10": 0.729,
+      "map@10": 0.5238,
+      "ms_per_query": 51.7
+    },
+    {
+      "graph": "dynamic",
+      "setting": "1-hop instead of 2-hop",
+      "hits@4": 0.9561,
+      "hits@10": 0.9969,
+      "recall@4": 0.6627,
+      "recall@10": 0.8423,
+      "mrr@10": 0.7905,
+      "map@10": 0.6009,
+      "ms_per_query": 32.0
+    },
+    {
+      "graph": "dynamic",
+      "setting": "v1 scoring (graph replaces similarity)",
+      "hits@4": 0.6585,
+      "hits@10": 0.8936,
+      "recall@4": 0.3813,
+      "recall@10": 0.6484,
+      "mrr@10": 0.5054,
+      "map@10": 0.3496,
+      "ms_per_query": 51.2
+    },
+    {
+      "graph": "static",
+      "setting": "full (graph bonus + source-aware)",
+      "hits@4": 0.9565,
+      "hits@10": 0.9965,
+      "recall@4": 0.6641,
+      "recall@10": 0.843,
+      "mrr@10": 0.7901,
+      "map@10": 0.6017,
+      "ms_per_query": 59.6
+    }
+  ]
+}

@@ -1,0 +1,259 @@
+{
+  "n_batches": 10,
+  "use_judge": false,
+  "batches": [
+    {
+      "batch": 1,
+      "new_docs": 61,
+      "total_docs": 61,
+      "until": "2023-10-04",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 4.71,
+        "judge_llm_calls": 0,
+        "entities": 1971,
+        "relations": 1127,
+        "superseded": 0,
+        "mentions": 3216
+      },
+      "static": {
+        "documents": 61,
+        "seconds": 1.7,
+        "judge_llm_calls": 0,
+        "entities": 1907,
+        "relations": 1117,
+        "superseded": 0,
+        "mentions": 3191
+      }
+    },
+    {
+      "batch": 2,
+      "new_docs": 61,
+      "total_docs": 122,
+      "until": "2023-10-12",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 5.42,
+        "judge_llm_calls": 0,
+        "entities": 4521,
+        "relations": 3157,
+        "superseded": 0,
+        "mentions": 8095
+      },
+      "static": {
+        "documents": 122,
+        "seconds": 4.52,
+        "judge_llm_calls": 0,
+        "entities": 4356,
+        "relations": 3114,
+        "superseded": 0,
+        "mentions": 8050
+      }
+    },
+    {
+      "batch": 3,
+      "new_docs": 61,
+      "total_docs": 183,
+      "until": "2023-10-19",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 4.61,
+        "judge_llm_calls": 0,
+        "entities": 6123,
+        "relations": 4653,
+        "superseded": 0,
+        "mentions": 11453
+      },
+      "static": {
+        "documents": 183,
+        "seconds": 6.87,
+        "judge_llm_calls": 0,
+        "entities": 5874,
+        "relations": 4575,
+        "superseded": 0,
+        "mentions": 11371
+      }
+    },
+    {
+      "batch": 4,
+      "new_docs": 61,
+      "total_docs": 244,
+      "until": "2023-10-26",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 6.74,
+        "judge_llm_calls": 0,
+        "entities": 7979,
+        "relations": 6218,
+        "superseded": 0,
+        "mentions": 15258
+      },
+      "static": {
+        "documents": 244,
+        "seconds": 10.04,
+        "judge_llm_calls": 0,
+        "entities": 7620,
+        "relations": 6113,
+        "superseded": 0,
+        "mentions": 15150
+      }
+    },
+    {
+      "batch": 5,
+      "new_docs": 61,
+      "total_docs": 305,
+      "until": "2023-11-05",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 7.9,
+        "judge_llm_calls": 0,
+        "entities": 9567,
+        "relations": 7598,
+        "superseded": 0,
+        "mentions": 18857
+      },
+      "static": {
+        "documents": 305,
+        "seconds": 13.74,
+        "judge_llm_calls": 0,
+        "entities": 9133,
+        "relations": 7474,
+        "superseded": 0,
+        "mentions": 18721
+      }
+    },
+    {
+      "batch": 6,
+      "new_docs": 61,
+      "total_docs": 366,
+      "until": "2023-11-17",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 7.59,
+        "judge_llm_calls": 0,
+        "entities": 11058,
+        "relations": 9132,
+        "superseded": 0,
+        "mentions": 22392
+      },
+      "static": {
+        "documents": 366,
+        "seconds": 17.51,
+        "judge_llm_calls": 0,
+        "entities": 10547,
+        "relations": 8981,
+        "superseded": 0,
+        "mentions": 22234
+      }
+    },
+    {
+      "batch": 7,
+      "new_docs": 61,
+      "total_docs": 427,
+      "until": "2023-11-27",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 7.84,
+        "judge_llm_calls": 0,
+        "entities": 12570,
+        "relations": 10699,
+        "superseded": 0,
+        "mentions": 26268
+      },
+      "static": {
+        "documents": 427,
+        "seconds": 22.73,
+        "judge_llm_calls": 0,
+        "entities": 11958,
+        "relations": 10519,
+        "superseded": 0,
+        "mentions": 26081
+      }
+    },
+    {
+      "batch": 8,
+      "new_docs": 61,
+      "total_docs": 488,
+      "until": "2023-12-05",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 6.4,
+        "judge_llm_calls": 0,
+        "entities": 13674,
+        "relations": 12044,
+        "superseded": 0,
+        "mentions": 29587
+      },
+      "static": {
+        "documents": 488,
+        "seconds": 28.67,
+        "judge_llm_calls": 0,
+        "entities": 13000,
+        "relations": 11825,
+        "superseded": 0,
+        "mentions": 29361
+      }
+    },
+    {
+      "batch": 9,
+      "new_docs": 61,
+      "total_docs": 549,
+      "until": "2023-12-13",
+      "dynamic": {
+        "documents": 61,
+        "seconds": 6.48,
+        "judge_llm_calls": 0,
+        "entities": 14715,
+        "relations": 13339,
+        "superseded": 0,
+        "mentions": 32911
+      },
+      "static": {
+        "documents": 549,
+        "seconds": 34.29,
+        "judge_llm_calls": 0,
+        "entities": 13969,
+        "relations": 13065,
+        "superseded": 0,
+        "mentions": 32656
+      }
+    },
+    {
+      "batch": 10,
+      "new_docs": 60,
+      "total_docs": 609,
+      "until": "2023-12-25",
+      "dynamic": {
+        "documents": 60,
+        "seconds": 7.51,
+        "judge_llm_calls": 0,
+        "entities": 16023,
+        "relations": 14769,
+        "superseded": 0,
+        "mentions": 36146
+      },
+      "static": {
+        "documents": 609,
+        "seconds": 40.26,
+        "judge_llm_calls": 0,
+        "entities": 15199,
+        "relations": 14459,
+        "superseded": 0,
+        "mentions": 35862
+      }
+    }
+  ],
+  "dynamic_total_seconds": 65.2,
+  "static_total_seconds": 180.3,
+  "dynamic_stats": {
+    "entities_new": 16023,
+    "mentions": 36281,
+    "merge_alias": 18396,
+    "merge_vector": 1507,
+    "relations_new": 14769,
+    "relations_reinforced": 1493,
+    "merge_soft_type": 355,
+    "relations_self_loop": 17
+  },
+  "created": "2026-11-11 03:19"
+}
